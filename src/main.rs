@@ -18,7 +18,7 @@ struct Args {
     /// Path and filename of the output file
     output_path: PathBuf,
     /// Delimiter of the input files
-    #[arg(short, long, default_value_t = '\t')]
+    #[arg(short, long, default_value_t = ',')]
     delimiter: char,
 }
 
@@ -80,7 +80,7 @@ where
         .all(|(x, y)| x == y);
 
     if !row_names_match {
-        println!("ERROR: Row names between case and control files do not match up.");
+        println!("ERROR: Row names between case and control files do not match up");
         return ();
     };
 
@@ -110,14 +110,9 @@ where
                 })
                 .collect();
 
-            println!("{:?}", case_values);
-            println!("{:?}", control_values);
-
             cohen(case_values, control_values)
         })
         .collect();
-
-    println!("{:?}", result);
 
     writer.write_record(vec!["row_names", "cohen_d"]).unwrap();
     for (row_name, value) in control_row_names.into_iter().zip(result.into_iter()) {
@@ -126,6 +121,8 @@ where
             .unwrap();
     }
     writer.flush().unwrap();
+
+    println!("Done!");
 
     ()
 }
@@ -228,8 +225,7 @@ gene_1,12.6,11.1,12.3
 gene_2,11.1,12.3,12.6
 gene_3,12.3,12.6,11.1
 ";
-        let mut case_samples = 
-            ReaderBuilder::new().from_reader(Cursor::new(cases.as_bytes()));
+        let mut case_samples = ReaderBuilder::new().from_reader(Cursor::new(cases.as_bytes()));
         let mut control_samples =
             ReaderBuilder::new().from_reader(Cursor::new(controls.as_bytes()));
         let mut writer = WriterBuilder::new().from_writer(vec![]);
