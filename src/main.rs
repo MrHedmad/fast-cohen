@@ -1,9 +1,9 @@
 use clap::{command, Parser};
 use csv::Reader;
-use std::fs::File;
-use std::path::PathBuf;
-use std::iter::Iterator;
 use num::{Float, NumCast};
+use std::fs::File;
+use std::iter::Iterator;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -19,19 +19,18 @@ struct Args {
     output_path: PathBuf,
     /// Delimiter of the input files
     #[arg(short, long, default_value_t = '\t')]
-    delimiter: char
+    delimiter: char,
 }
 
 fn main() {
     // Parse the command-line arguments.
     let args: Args = Args::parse();
-    
+
     println!("Building case reader...");
     let mut case_samples: Reader<File> = csv::ReaderBuilder::new()
         .delimiter(args.delimiter as u8)
         .from_path(&args.case_expression_matrix)
         .expect("Failed to read input case expression matrix");
-
 
     println!("Building control reader...");
     let mut control_samples: Reader<File> = csv::ReaderBuilder::new()
@@ -41,13 +40,19 @@ fn main() {
 
     // Sort the control and case samples to have the same row names
     // I assume that the first row is made up of column names
-    let control_row_names: Vec<String> = control_samples.records()
-        .map(|x| x.unwrap().get(0).unwrap().to_owned()).collect();
-    let case_row_names: Vec<String> = case_samples.records()
-        .map(|x| x.unwrap().get(0).unwrap().to_owned()).collect();
+    let control_row_names: Vec<String> = control_samples
+        .records()
+        .map(|x| x.unwrap().get(0).unwrap().to_owned())
+        .collect();
+    let case_row_names: Vec<String> = case_samples
+        .records()
+        .map(|x| x.unwrap().get(0).unwrap().to_owned())
+        .collect();
 
-    let row_names_match = control_row_names.into_iter().zip(case_row_names.into_iter()
-    ).all(|(x, y)| x == y);
+    let row_names_match = control_row_names
+        .into_iter()
+        .zip(case_row_names.into_iter())
+        .all(|(x, y)| x == y);
 
     if !row_names_match {
         println!("ERROR: Row names between case and control files do not match up.");
@@ -55,35 +60,42 @@ fn main() {
     };
 
     println!("Computing cohen's D...");
-    let _result: Vec<f64> = case_samples.records().zip(control_samples.records()).map(
-        |(case, control)| {
+    let _result: Vec<f64> = case_samples
+        .records()
+        .zip(control_samples.records())
+        .map(|(case, control)| {
             let case_values: Vec<f64> = case
                 .expect("Couldn't read case record")
                 .into_iter()
                 .skip(1)
-                .map(|x| x.parse().expect(&format!("non-float value in case record: {x}")))
+                .map(|x| {
+                    x.parse()
+                        .expect(&format!("non-float value in case record: {x}"))
+                })
                 .collect();
-            
+
             let control_values: Vec<f64> = control
                 .expect("Couldn't read case record")
                 .into_iter()
                 .skip(1)
-                .map(|x| x.parse().expect(&format!("non-float value in case record: {x}")))
+                .map(|x| {
+                    x.parse()
+                        .expect(&format!("non-float value in case record: {x}"))
+                })
                 .collect();
 
-
             cohen(case_values, control_values)
-        }
-    ).collect();
+        })
+        .collect();
 
     ()
 }
 
-/// TODO: The mean, var and cohen functions would be more useful if we made them
-/// generic. But I don't know how to do that (very well), so I leave them be.
-
 /// Calculate the mean of the values in the input vector
-fn mean<F>(data: Vec<F>) -> Option<F> where F: Float + std::iter::Sum {
+fn mean<F>(data: Vec<F>) -> Option<F>
+where
+    F: Float + std::iter::Sum,
+{
     let count = data.len();
     let sum = data.into_iter().sum::<F>();
 
@@ -94,7 +106,10 @@ fn mean<F>(data: Vec<F>) -> Option<F> where F: Float + std::iter::Sum {
 }
 
 /// Calculate the variance of the values in the input vector
-fn var<F>(data: &Vec<F>) -> F where F: Float + std::iter::Sum {
+fn var<F>(data: &Vec<F>) -> F
+where
+    F: Float + std::iter::Sum,
+{
     let data_mean = mean(data.clone()).unwrap();
     let count = &data.len();
 
@@ -112,13 +127,17 @@ fn var<F>(data: &Vec<F>) -> F where F: Float + std::iter::Sum {
 }
 
 /// Calculate cohen's D statistic from a case and control numeric vectors.
-fn cohen<T>(case: Vec<T>, control: Vec<T>) -> T where T: Float + std::iter::Sum {
+fn cohen<T>(case: Vec<T>, control: Vec<T>) -> T
+where
+    T: Float + std::iter::Sum,
+{
     let n_case: T = NumCast::from(case.len()).unwrap();
     let n_control: T = NumCast::from(case.len()).unwrap();
 
-    let pooled_var = (
-        ((n_case - NumCast::from(1).unwrap()) * var(&case) + (n_control - NumCast::from(1).unwrap()) * var(&control)) / (n_case + n_control - NumCast::from(2).unwrap())
-    ).powf(NumCast::from(0.5).unwrap());
+    let pooled_var = (((n_case - NumCast::from(1).unwrap()) * var(&case)
+        + (n_control - NumCast::from(1).unwrap()) * var(&control))
+        / (n_case + n_control - NumCast::from(2).unwrap()))
+    .powf(NumCast::from(0.5).unwrap());
 
     if pooled_var == NumCast::from(0).unwrap() {
         return NumCast::from(0).unwrap();
@@ -127,7 +146,6 @@ fn cohen<T>(case: Vec<T>, control: Vec<T>) -> T where T: Float + std::iter::Sum 
     (mean(case).unwrap() - mean(control).unwrap()) / pooled_var
     //(mean(case).unwrap() - mean(control).unwrap()) as f32
 }
-
 
 #[cfg(test)]
 mod tests {
