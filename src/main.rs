@@ -1,8 +1,10 @@
 use clap::{command, Parser};
 use csv::{Reader, Writer};
+use num::{abs, Signed};
 use num::{Float, NumCast};
 use std::fs::File;
 use std::iter::Iterator;
+use std::ops::Sub;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -168,7 +170,7 @@ where
     T: Float + std::iter::Sum,
 {
     let n_case: T = NumCast::from(case.len()).unwrap();
-    let n_control: T = NumCast::from(case.len()).unwrap();
+    let n_control: T = NumCast::from(control.len()).unwrap();
 
     let pooled_var = (((n_case - NumCast::from(1).unwrap()) * var(&case)
         + (n_control - NumCast::from(1).unwrap()) * var(&control))
@@ -180,6 +182,16 @@ where
     }
 
     (mean(case).unwrap() - mean(control).unwrap()) / pooled_var
+}
+
+fn kinda_equal<T, G>(a: T, b: T, tolerance: G) -> bool
+where
+    T: Sub + PartialEq,
+    G: PartialEq,
+    <T as Sub>::Output: PartialOrd<G>,
+    <T as Sub>::Output: Signed,
+{
+    abs(a - b) < tolerance
 }
 
 #[cfg(test)]
@@ -205,10 +217,11 @@ mod tests {
 
     #[test]
     fn test_cohen() {
-        assert_eq!(
-            cohen(vec![2.2, 1.3, 3.1], vec![12.6, 11.1, 12.3]),
-            -11.549410759380276 // Calculated this by hand up to the 10th place
-        )
+        assert!(kinda_equal(
+            cohen(vec![2.2, 1.3, 3.1], vec![12.6, 11.1, 12.3, 13.2, 14.2]),
+            -9.809684, // Calculated this by hand
+            0.0001
+        ))
     }
 
     #[test]
