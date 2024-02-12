@@ -172,16 +172,16 @@ where
     let n_case: T = NumCast::from(case.len()).unwrap();
     let n_control: T = NumCast::from(control.len()).unwrap();
 
-    let pooled_var = (((n_case - NumCast::from(1).unwrap()) * var(&case)
+    let pooled_stdev = (((n_case - NumCast::from(1).unwrap()) * var(&case)
         + (n_control - NumCast::from(1).unwrap()) * var(&control))
         / (n_case + n_control - NumCast::from(2).unwrap()))
     .powf(NumCast::from(0.5).unwrap());
 
-    if pooled_var == NumCast::from(0).unwrap() {
+    if pooled_stdev == NumCast::from(0).unwrap() {
         return NumCast::from(0).unwrap();
     }
 
-    (mean(case).unwrap() - mean(control).unwrap()) / pooled_var
+    (mean(case).unwrap() - mean(control).unwrap()) / pooled_stdev
 }
 
 #[cfg(test)]
