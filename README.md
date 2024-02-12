@@ -1,7 +1,7 @@
-# Fast Cohen's D calculator
+# Fast Cohen's d calculator
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/mrhedmad/fast-cohen/rust.yml)
 
-A fast implementation of a Cohen's D calculator.
+A fast implementation of a Cohen's d calculator.
 
 ## Installation
 You will need [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) installed.
@@ -23,7 +23,7 @@ fast-cohen "control_samples" "case_samples" "output_csv"
 
 You can use `fast-cohen --help` to see the help message:
 ```
-Calculate cohen's D of expression values.
+Calculate cohen's d of expression values.
 
 Usage: fast-cohen [OPTIONS] <CASE_EXPRESSION_MATRIX> <CONTROL_EXPRESSION_MATRIX> <OUTPUT_PATH>
 
@@ -37,7 +37,7 @@ Options:
   -h, --help  
 ```
 
-The output csv will have a `row_names` column with the row names, and a `cohen_d` column with the Cohen's D values.
+The output csv will have a `row_names` column with the row names, and a `cohen_d` column with the Cohen's d values.
 
 NOTE: The order of the samples in the two input files MUST be the same between the two input files.
 If you need to sort the rows, and the first column is the sample names, you can use [`xsv`](https://github.com/BurntSushi/xsv) to sort the columns with the following command:

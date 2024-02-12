@@ -10,7 +10,7 @@ use std::path::PathBuf;
 #[derive(Parser, Debug)]
 #[command(
     author = "Luca Visentin",
-    about = "Calculate cohen's D of expression values."
+    about = "Calculate cohen's d of expression values."
 )]
 struct Args {
     /// Path to the expression matrix with the 'case' expression matrix
@@ -86,7 +86,7 @@ where
         return ();
     };
 
-    println!("Computing cohen's D...");
+    println!("Computing cohen's d...");
     let result: Vec<f64> = case_samples
         .records()
         .zip(control_samples.records())
@@ -164,7 +164,7 @@ where
     variance
 }
 
-/// Calculate cohen's D statistic from a case and control numeric vectors.
+/// Calculate cohen's d statistic from a case and control numeric vectors.
 fn cohen<T>(case: Vec<T>, control: Vec<T>) -> T
 where
     T: Float + std::iter::Sum,
@@ -184,21 +184,22 @@ where
     (mean(case).unwrap() - mean(control).unwrap()) / pooled_var
 }
 
-fn kinda_equal<T, G>(a: T, b: T, tolerance: G) -> bool
-where
-    T: Sub + PartialEq,
-    G: PartialEq,
-    <T as Sub>::Output: PartialOrd<G>,
-    <T as Sub>::Output: Signed,
-{
-    abs(a - b) < tolerance
-}
-
 #[cfg(test)]
 mod tests {
     use crate::*;
     use csv::{ReaderBuilder, WriterBuilder};
     use std::io::Cursor;
+
+    fn kinda_equal<T, G>(a: T, b: T, tolerance: G) -> bool
+    where
+        T: Sub + PartialEq,
+        G: PartialEq,
+        <T as Sub>::Output: PartialOrd<G>,
+        <T as Sub>::Output: Signed,
+    {
+        abs(a - b) < tolerance
+    }
+
     #[test]
     fn mean_of_values() {
         assert_eq!(mean(vec![1., 2., 3.]).unwrap(), 2.);
