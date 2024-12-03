@@ -257,4 +257,37 @@ gene_3,-11.549410759380276
 "
         )
     }
+
+    #[test]
+    fn itegration_real() {
+        let cases = "\
+row_names,sample1,sample2,sample3
+gene_1,-0.535058383960151,1.36337028207967,1.94555121778008
+gene_2,-0.00508937611274737,2.05525510002174,-0.605214688134933
+gene_3,-0.0224148926648615,1.00937541977038,-0.675006944468402
+";
+        let controls = "\
+row_names,sample4,sample5,sample6,sample7
+gene_1,2.6842520940552,5.2521840950163,3.75921244478561,4.83016238235602
+gene_2,-2.29756231844181,-1.15137785595405,-0.486929672999351,-2.816582037462001
+gene_3,9.6425133676228,11.0997575073032,9.17697194351323,8.82739260182
+";
+        let mut case_samples = ReaderBuilder::new().from_reader(Cursor::new(cases.as_bytes()));
+        let mut control_samples =
+            ReaderBuilder::new().from_reader(Cursor::new(controls.as_bytes()));
+        let mut writer = WriterBuilder::new().from_writer(vec![]);
+
+        process_csvs(&mut case_samples, &mut control_samples, &mut writer);
+
+        let output_data = String::from_utf8(writer.into_inner().unwrap()).unwrap();
+        assert_eq!(
+            output_data,
+            "\
+row_names,cohen_d
+gene_1,-2.6462737190827195
+gene_2,1.7993829062243292
+gene_3,-10.169673185162345
+"
+        )
+    }
 }
