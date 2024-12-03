@@ -1,10 +1,8 @@
 use clap::{command, Parser};
 use csv::{Reader, Writer};
-use num::{abs, Signed};
 use num::{Float, NumCast};
 use std::fs::File;
 use std::iter::Iterator;
-use std::ops::Sub;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -45,14 +43,14 @@ fn main() {
 
     process_csvs(&mut case_samples, &mut control_samples, &mut writer);
 
-    ()
+    
 }
 
 fn process_csvs<R, T, V>(
     case_samples: &mut Reader<R>,
     control_samples: &mut Reader<T>,
     writer: &mut Writer<V>,
-) -> ()
+)
 where
     V: std::io::Write,
     R: std::io::Read + std::io::Seek,
@@ -78,12 +76,12 @@ where
     let row_names_match = control_row_names
         .clone()
         .into_iter()
-        .zip(case_row_names.into_iter())
+        .zip(case_row_names)
         .all(|(x, y)| x == y);
 
     if !row_names_match {
         println!("ERROR: Row names between case and control files do not match up");
-        return ();
+        return ;
     };
 
     println!("Computing cohen's d...");
@@ -98,7 +96,7 @@ where
                 .skip(1)
                 .map(|x| {
                     x.parse()
-                        .expect(&format!("non-float value in case record: {x}"))
+                        .unwrap_or_else(|_| panic!("non-float value in case record: {x}"))
                 })
                 .collect();
 
@@ -108,7 +106,7 @@ where
                 .skip(1)
                 .map(|x| {
                     x.parse()
-                        .expect(&format!("non-float value in case record: {x}"))
+                        .unwrap_or_else(|_| panic!("non-float value in case record: {x}"))
                 })
                 .collect();
 
@@ -126,7 +124,7 @@ where
 
     println!("Done!");
 
-    ()
+    
 }
 
 /// Calculate the mean of the values in the input vector
