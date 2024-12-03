@@ -42,16 +42,13 @@ fn main() {
         Writer::from_path(&args.output_path).expect("Could not open output file for writing.");
 
     process_csvs(&mut case_samples, &mut control_samples, &mut writer);
-
-    
 }
 
 fn process_csvs<R, T, V>(
     case_samples: &mut Reader<R>,
     control_samples: &mut Reader<T>,
     writer: &mut Writer<V>,
-)
-where
+) where
     V: std::io::Write,
     R: std::io::Read + std::io::Seek,
     T: std::io::Read + std::io::Seek,
@@ -81,7 +78,7 @@ where
 
     if !row_names_match {
         println!("ERROR: Row names between case and control files do not match up");
-        return ;
+        return;
     };
 
     println!("Computing cohen's d...");
@@ -123,8 +120,6 @@ where
     writer.flush().unwrap();
 
     println!("Done!");
-
-    
 }
 
 /// Calculate the mean of the values in the input vector
@@ -186,7 +181,9 @@ where
 mod tests {
     use crate::*;
     use csv::{ReaderBuilder, WriterBuilder};
+    use num::{abs, Signed};
     use std::io::Cursor;
+    use std::ops::Sub;
 
     fn kinda_equal<T, G>(a: T, b: T, tolerance: G) -> bool
     where
